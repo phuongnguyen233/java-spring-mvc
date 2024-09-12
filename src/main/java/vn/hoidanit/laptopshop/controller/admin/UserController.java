@@ -1,4 +1,7 @@
-package vn.hoidanit.laptopshop.controller;
+package vn.hoidanit.laptopshop.controller.admin;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
@@ -16,6 +19,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.servlet.ServletContext;
 
 
 
@@ -23,9 +29,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class UserController {
         private final UserService userService;
+        private final ServletContext servletContext; 
 
-    public UserController(UserService userService, UserRepository userRepository) {
+    public UserController(UserService userService, UserRepository userRepository,ServletContext servletContext) {
         this.userService = userService;
+        this.servletContext = servletContext;
     }
     @RequestMapping("/")
     public String getHomePage(Model model) {
@@ -37,7 +45,7 @@ public class UserController {
     public String getTableUser(Model model) {
        List<User> users = this.userService.getallUser();
        model.addAttribute("users1", users);
-        return "admin/user/table";
+        return "admin/user/show";
     }
     @RequestMapping("/admin/user/{id}")
     public String getUserDetailPage(Model model, @PathVariable long id) {
@@ -45,11 +53,11 @@ public class UserController {
         model.addAttribute("user", user);
         model.addAttribute("id", id);
         
-        return "admin/user/show";
+        return "admin/user/detail";
         
     }
 
-    @RequestMapping("/admin/user/create")
+    @GetMapping("/admin/user/create")
     public String getUser(Model model){
         model.addAttribute("newUser", new User());
         return "admin/user/create";
@@ -58,9 +66,26 @@ public class UserController {
     
 
 
-@RequestMapping(value = "/admin/user/create", method = RequestMethod.POST)
-public String createUserPage(Model model, @ModelAttribute("newUser") User hoidanit){
-    System.out.println("run here" + hoidanit);
+@PostMapping(value = "/admin/user/create")
+public String createUserPage(Model model, @ModelAttribute("newUser") User hoidanit,
+@RequestParam("hoidanitFile") MultipartFile file){
+    private final ServletContext servletContext; 
+            byte[] bytes = file.getBytes(); 
+            String rootPath = this.servletContext.getRealPath("/resources/images"); 
+ 
+            File dir = new File(rootPath + File.separator + "avatar"); 
+            if (!dir.exists()) 
+                dir.mkdirs(); 
+ 
+            // Create the file on server 
+            File serverFile = new File(dir.getAbsolutePath() + File.separator + 
+                    +System.currentTimeMillis() + "-" + file.getOriginalFilename()); 
+ 
+            BufferedOutputStream stream = new BufferedOutputStream( 
+                    new FileOutputStream(serverFile)); 
+            stream.write(bytes); 
+            stream.close(); 
+    
     this.userService.handleSaveUser(hoidanit);
     return "redirect:/admin/user";
 
