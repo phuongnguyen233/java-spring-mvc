@@ -1,27 +1,22 @@
 package vn.hoidanit.laptopshop.controller.admin;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.List;
 
+import java.util.List;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-
 import vn.hoidanit.laptopshop.domain.User;
 import vn.hoidanit.laptopshop.repository.UserRepository;
+import vn.hoidanit.laptopshop.service.UploadService;
 import vn.hoidanit.laptopshop.service.UserService;
-
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.servlet.ServletContext;
 
 
 
@@ -29,11 +24,13 @@ import jakarta.servlet.ServletContext;
 @Controller
 public class UserController {
         private final UserService userService;
-        private final ServletContext servletContext; 
+        private final UploadService uploadService;
+        private PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService, UserRepository userRepository,ServletContext servletContext) {
+    public UserController(UserService userService, UserRepository userRepository, UploadService uploadService, PasswordEncoder passwordEncoder ) {
         this.userService = userService;
-        this.servletContext = servletContext;
+        this.uploadService = uploadService;
+        this.passwordEncoder = passwordEncoder;
     }
     @RequestMapping("/")
     public String getHomePage(Model model) {
@@ -68,24 +65,12 @@ public class UserController {
 
 @PostMapping(value = "/admin/user/create")
 public String createUserPage(Model model, @ModelAttribute("newUser") User hoidanit,
-@RequestParam("hoidanitFile") MultipartFile file){
-    private final ServletContext servletContext; 
-            byte[] bytes = file.getBytes(); 
-            String rootPath = this.servletContext.getRealPath("/resources/images"); 
- 
-            File dir = new File(rootPath + File.separator + "avatar"); 
-            if (!dir.exists()) 
-                dir.mkdirs(); 
- 
-            // Create the file on server 
-            File serverFile = new File(dir.getAbsolutePath() + File.separator + 
-                    +System.currentTimeMillis() + "-" + file.getOriginalFilename()); 
- 
-            BufferedOutputStream stream = new BufferedOutputStream( 
-                    new FileOutputStream(serverFile)); 
-            stream.write(bytes); 
-            stream.close(); 
-    
+@RequestParam("hoidanitFile") MultipartFile file){ 
+    String avatar = this.uploadService.handleSaveUploadFile(file, "avatar");
+    String hashPassword = this.passwordEncoder.encode(hoidanit.getPassword());
+    hoidanit.setAvatar(avatar);
+    hoidanit.setPassword(hashPassword);
+    hoidanit.setRole(this.userService.getRoleByName(hoidanit.getRole().getName()));
     this.userService.handleSaveUser(hoidanit);
     return "redirect:/admin/user";
 
@@ -100,17 +85,33 @@ public String createUserPage(Model model, @ModelAttribute("newUser") User hoidan
 
 
 @PostMapping("/admin/user/update-user")
-public String postUpdateUser(Model model, @ModelAttribute("newUser") User hoidanit){
-    User currentUser = this.userService.getInfoUserById(hoidanit.getId());
+    public String postUpdateUser(Model model, @ModelAttribute("newUser") User hoidanit, @RequestParam(value = "hoidanitFile", required = false) MultipartFile file) {
+        User currentUser = this.userService.getInfoUserById(hoidanit.getId());
+        
+        if (currentUser != null) {
+            // Cập nhật thông tin cơ bản
+            currentUser.setAddress(hoidanit.getAddress());
+            currentUser.setFullName(hoidanit.getFullName());
+            currentUser.setPhone(hoidanit.getPhone());
+            
+            // Cập nhật avatar nếu có file mới
+            if (file != null && !file.isEmpty()) {
+                String avatar = this.uploadService.handleSaveUploadFile(file, "avatar");
+                currentUser.setAvatar(avatar);
+            }
     
-    if (currentUser != null){
-       currentUser.setAddress(hoidanit.getAddress());
-       currentUser.setFullName(hoidanit.getFullName());
-       currentUser.setPhone(hoidanit.getPhone());
-       this.userService.handleSaveUser(currentUser);
+            // Cập nhật role nếu có
+            if (hoidanit.getRole() != null && hoidanit.getRole().getName() != null) {
+                currentUser.setRole(this.userService.getRoleByName(hoidanit.getRole().getName()));
+            }
+            
+            // Lưu user cập nhật
+            this.userService.handleSaveUser(currentUser);
+        }
+        
+        return "redirect:/admin/user";
     }
-    return "redirect:/admin/user";
-}
+    
 @GetMapping("/admin/user/delete-user/{id}")
     public String getDeleteUserPage(Model model, @PathVariable long id){
         model.addAttribute("id", id);
