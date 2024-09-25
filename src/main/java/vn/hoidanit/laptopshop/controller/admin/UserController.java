@@ -41,6 +41,7 @@ public class UserController {
         List<User> arUsers = this.userService.getallUserByEmail("phuong0106@gmail.com");
         System.out.println(arUsers);
         return "hello";
+        
     }
     @RequestMapping("/admin/user")
     public String getTableUser(Model model) {
