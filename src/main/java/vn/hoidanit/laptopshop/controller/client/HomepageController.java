@@ -9,10 +9,14 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 
+import vn.hoidanit.laptopshop.domain.Cart;
+import vn.hoidanit.laptopshop.domain.CartDetail;
 import vn.hoidanit.laptopshop.domain.Product;
 import vn.hoidanit.laptopshop.domain.User;
 import vn.hoidanit.laptopshop.domain.dto.RegisterDTO;
+import vn.hoidanit.laptopshop.service.CartDetailService;
 import vn.hoidanit.laptopshop.service.ProductService;
 import vn.hoidanit.laptopshop.service.UserService;
 
@@ -21,6 +25,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -30,11 +36,14 @@ public class HomepageController {
     private final ProductService productService;
     private final UserService userService;
     private PasswordEncoder passwordEncoder;
+    private CartDetailService cartDetailService;
     
-    public HomepageController(ProductService productService, UserService userService, PasswordEncoder passwordEncoder){
+    
+    public HomepageController(ProductService productService, UserService userService, PasswordEncoder passwordEncoder, CartDetailService cartDetailService ){
         this.productService = productService;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
+        this.cartDetailService = cartDetailService;
     }
     @GetMapping("/")
     public String getHomePage(Model model)
@@ -72,6 +81,8 @@ public class HomepageController {
     public String getDenyPage(Model model) {
         return "client/auth/deny";
     }
+    
+    
         
     
 }

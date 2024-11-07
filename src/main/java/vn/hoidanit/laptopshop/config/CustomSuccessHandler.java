@@ -50,6 +50,10 @@ protected void clearAuthenticationAttributes(HttpServletRequest request, Authent
     if(user != null){
         session.setAttribute("fullName", user.getFullName());
         session.setAttribute("avatar", user.getAvatar());
+        session.setAttribute("id", user.getId());
+        session.setAttribute("email", user.getEmail());
+        long sum = user.getCart() == null ? 0 : user.getCart().getSum();
+        session.setAttribute("sum", sum);
     }
    
 }
