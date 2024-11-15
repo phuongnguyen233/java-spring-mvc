@@ -24,7 +24,7 @@
                         <div id="layoutSidenav_content">
                             <main>
                                 <div class="container-fluid px-4">
-                                    <h1 class="mt-4">Manage Products</h1>
+                                    <h1 class="mt-4">Manage Orders</h1>
                                     <ol class="breadcrumb mb-4">
                                         <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
                                         <li class="breadcrumb-item active">Products</li>
@@ -34,39 +34,39 @@
                                             <div class="row">
                                                 <div class="col-12 mx-auto">
                                                     <div class="d-flex justify-content-between">
-                                                        <h3>Table Product</h3>
-                                                        <a href="/admin/product/create" class="btn btn-primary">Create a
-                                                            Product</a>
+                                                        <h3>Product detail with id: ${id}</h3>
+
                                                     </div>
                                                     <hr />
 
                                                     <table class="table table-hover table-bordered">
                                                         <thead>
                                                             <tr>
-                                                                <th>ID</th>
-                                                                <th>Name</th>
-                                                                <th>Price</th>
-                                                                <th>Factory</th>
-                                                                <th>Action</th>
+                                                                <th>Sản phẩm</th>
+                                                                <th>Tên</th>
+                                                                <th>Giá cả</th>
+                                                                <th>Số lượng</th>
+                                                                <th>Thành tiền</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            <c:forEach var="product" items="${products}">
+                                                            <c:forEach var="order" items="${order}">
                                                                 <tr>
-                                                                    <th>${product.id}</th>
-                                                                    <td>${product.name}</td>
+                                                                    <th>${order.id}</th>
                                                                     <td>
                                                                         <p class="mb-0 pe-4">
                                                                             <fmt:formatNumber type="number"
-                                                                                value="${product.price}" /> đ
+                                                                                value="${order.totalPrice}" /> đ
                                                                         </p>
-                                                                    <td>${product.factory}</td>
+                                                                    </td>
+                                                                    <td>${order.receiverName}</td>
+                                                                    <td>${order.status}</td>
                                                                     <td>
-                                                                        <a href="/admin/product/${product.id}"
+                                                                        <a href="/admin/order/${order.id}"
                                                                             class="btn btn-success">View</a>
-                                                                        <a href="/admin/product/update/${product.id}"
+                                                                        <a href="/admin/order/update/${product.id}"
                                                                             class="btn btn-warning mx-2">Update</a>
-                                                                        <a href="/admin/product/delete/${product.id}"
+                                                                        <a href="/admin/order/delete/${product.id}"
                                                                             class="btn btn-danger">Delete</a>
                                                                     </td>
                                                                 </tr>
